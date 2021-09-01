@@ -1,34 +1,56 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.6;
+pragma solidity ^0.8.6;
 
-// Nombre del contrato
-contract TaskContract {
-    // Arra: Lista de tareas: Declaraciones de variables
-    uint taskCounter = 0; //Variable que empezara en 0
+contract TasksContract {
+    uint256 public tasksCounter = 0;
 
-    struct Task { // Conjunto de tipo de datos.
-        uint256 id; 
-        string title; //Titulo de la tarea
-        string description; // Descripcion de la tarea
-        bool done; // Creacion por defecto
-        uint256 createdAt; // Timestamp
+    struct Task {
+        uint256 id;
+        string title;
+        string description;
+        bool done;
+        uint256 createdAt;
     }
 
-    mapping (uint256 => Task) public tasks;/* le damos un nombre a este mapping */ 
-    // Con la flecha apunta a un objeto que tenga ciertas especificaciones
-    // Mapping: Conjunto de datos que contienen cualquier tipo de valor,
-    // ya sea numeros o nombres. For Eg.
-    /*  dato : valor
-        0: {},
-        1: {},
-        2: {},
-        3: {},
-    */
-    function createTask(string memory _title, string memory _description) public {
-        //¿Como accedo a la funcion? R= con el "public" o "view" pero este segundo no ejecuta, solo se es visible
-        tasks[taskCounter] = Task(taskCounter, _title, _description, false, block.timestamp); // Pasando las variables
-        taskCounter++;
-    }
-    // function toggleDone() {}
+    event TaskCreated(
+        uint256 id,
+        string title,
+        string description,
+        bool done,
+        uint256 createdAt
+    );
+    event TaskToggledDone(uint256 id, bool done);
 
+    mapping(uint256 => Task) public tasks;
+
+    constructor() {
+        createTask("my first task", "my first description");
+    }
+
+    function createTask(string memory _title, string memory _description)
+        public
+    {
+        tasksCounter++;
+        tasks[tasksCounter] = Task(
+            tasksCounter,
+            _title,
+            _description,
+            false,
+            block.timestamp
+        );
+        emit TaskCreated(
+            tasksCounter,
+            _title,
+            _description,
+            false,
+            block.timestamp
+        );
+    }
+
+    function toggleDone(uint256 _id) public {
+        Task memory _task = tasks[_id];
+        _task.done = !_task.done;
+        tasks[_id] = _task;
+        emit TaskToggledDone(_id, _task.done);
+    }
 }
